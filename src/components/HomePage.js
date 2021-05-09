@@ -43,11 +43,11 @@ export default function HomePage({ navigation }) {
       >
         <Text style={styles.description}>Scan your QR code</Text>
         <Image style={styles.qr} source={barcodeScanner} />
-        <Text
+        {/* <Text
         //   onPress={() => navigation.pop()}
           style={styles.cancel}>
           Cancel
-        </Text>
+        </Text> */}
       </Camera>
       {scanned && (
         <Button title={"Tap to Scan Again"} onPress={() => setScanned(false)} />
