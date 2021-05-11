@@ -21,8 +21,16 @@ export default function HomePage({ navigation }) {
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
+    let qrData = data;
+
     alert(`Bar code with type ${type} and data ${data} has been scanned!`);
   };
+
+  // const validateData = (data) => {
+  //   if(new Date().getTime() > data.validUpto){
+
+  //   }
+  // }
 
   if (hasPermission === null) {
     return <Text>Requesting for camera permission</Text>;
