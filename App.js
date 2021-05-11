@@ -13,6 +13,7 @@ const Stack = createStackNavigator();
 
 export default function App() {
   return (
+    console.log("hi");
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
