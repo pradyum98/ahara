@@ -21,21 +21,8 @@ import ellipse from "../assets/Ellipse9.png";
 import logo from "../assets/Logo.png";
 import Card from "./Card";
 import foodImage from "../assets/Group6.png";
-
-// Initialize Firebase
-//TODO: Shift to a different file and initialize in App.js
-const firebaseConfig = {
-  apiKey: "AIzaSyCQomOAxL0oRH7vYpuCXwhrQ1fWRzO2qW0",
-  authDomain: "ahara-b0403.firebaseapp.com",
-  databaseURL: "https://ahara-b0403.firebaseio.com",
-  projectId: "ahara-b0403",
-  storageBucket: "ahara-b0403.appspot.com",
-  messagingSenderId: "601848970227",
-  appId: "1:601848970227:android:5b8e86e781a92be929f086",
-  //   measurementId: 'G-measurement-id',
-};
-
-firebase.initializeApp(firebaseConfig);
+import { auth } from "../firebaseConfig/firebase";
+import { db } from "../firebaseConfig/firebase";
 
 export default function LoginScreen({ navigation }) {
   const [mobileNumber, onChangeMobileNumber] = React.useState("");
@@ -56,6 +43,16 @@ export default function LoginScreen({ navigation }) {
       setTriggerBool("LogIn");
     }
   };
+
+  React.useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        navigation.replace("HomeTabs");
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   const attemptInvisibleVerification = false;
 
@@ -87,10 +84,10 @@ export default function LoginScreen({ navigation }) {
         <Text
           style={{
             position: "absolute",
-            top: 120,        
+            top: 120,
             color: "#000000",
-            fontWeight : "bold",
-            fontSize: 30
+            fontWeight: "bold",
+            fontSize: 30,
           }}
         >
           Welcome To Ahara!
@@ -130,7 +127,7 @@ export default function LoginScreen({ navigation }) {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               title="Sign Up"
-              style={[styles.buttonv2 , {marginRight : 10}]}
+              style={[styles.buttonv2, { marginRight: 10 }]}
               onPress={triggerSignUpLogin}
               disabled={triggerBool == "SignUp"}
             >
@@ -169,13 +166,25 @@ export default function LoginScreen({ navigation }) {
                     style={styles.button}
                     onPress={async () => {
                       try {
-                        const phoneProvider = new firebase.auth.PhoneAuthProvider();
-                        const verificationId = await phoneProvider.verifyPhoneNumber(
-                          mobileNumber,
-                          recaptchaVerifier.current
-                        );
-                        setVerificationId(verificationId);
-                        alert("Verification code has been sent to your phone.");
+                        if (
+                          !(
+                            await db.collection("users").doc(mobileNumber.toString()).get()
+                          ).exists
+                        ) {
+                          navigation.navigate("SignUp");
+                        } else {
+                          const phoneProvider =
+                            new firebase.auth.PhoneAuthProvider();
+                          const verificationId =
+                            await phoneProvider.verifyPhoneNumber(
+                              "+91"+mobileNumber,
+                              recaptchaVerifier.current
+                            );
+                          setVerificationId(verificationId);
+                          alert(
+                            "Verification code has been sent to your phone."
+                          );
+                        }
                       } catch (err) {
                         console.log(err);
                         alert(`${err.message}`);
@@ -202,10 +211,11 @@ export default function LoginScreen({ navigation }) {
                     style={styles.button}
                     onPress={async () => {
                       try {
-                        const credential = firebase.auth.PhoneAuthProvider.credential(
-                          verificationId,
-                          password
-                        );
+                        const credential =
+                          firebase.auth.PhoneAuthProvider.credential(
+                            verificationId,
+                            password
+                          );
                         await firebase.auth().signInWithCredential(credential);
                         alert("Phone authentication successful 👍");
                         navigation.navigate("HomeTabs");
@@ -243,22 +253,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     // alignSelf : "center",
     // justifyContent: "center",
-    textAlign : "center" 
+    textAlign: "center",
   },
   textv2: {
     alignItems: "flex-start",
   },
   inputContainer: {
     width: Dimensions.get("window").width * 1,
-     marginTop: 220,
+    marginTop: 220,
     // position: "absolute",
     maxWidth: "80%",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    
+
     shadowColor: "black",
-     shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.26,
     elevation: 8,
@@ -267,7 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonContainer: {
-   // flex: 1,
+    // flex: 1,
     flexDirection: "row",
     //padding: 30,
     //height : "40%",
